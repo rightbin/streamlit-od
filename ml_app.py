@@ -17,7 +17,7 @@ def run_ml_app():
 
     st.write('sdd_mobilenet이 가지고 있는 class는 다음과 같습니다.')
 
-    img = Image.open('data\images\coco.JPG')
+    img = Image.open('coco.JPG')
     st.image(img)
 
     st.write('총 99개의 클래스를 사용합니다. 이 안에는 사람,자전거,자동차,오토바이,핸드백,넥타이,칫솔 등이 학습되어 있습니다.')
@@ -26,14 +26,14 @@ def run_ml_app():
 
     st.write('다음의 비디오는 Pixabay에서 다운로드 받았습니다.')
 
-    video_file = open('data/India.mp4', 'rb')
+    video_file = open('India.mp4', 'rb')
     video_bytes = video_file.read()
         
     st.video(video_bytes)
 
     st.write('다음은 odject-detection을 한 후의 영상입니다.')
 
-    video_result = open('data/output.mp4','rb')
+    video_result = open('output.mp4','rb')
 
     video2 = video_result.read()
             
