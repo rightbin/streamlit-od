@@ -70,178 +70,80 @@ def run_yolo_app():
 
         st.text(
                 """
-import tensorflow as tf
 import os
-import pathlib
-import numpy as np
-import os
-import six.moves.urllib as urllib
-import sys
-import tarfile
-import tensorflow as tf
-import zipfile
+import time
 import cv2
 import numpy as np 
 
-from collections import defaultdict
-from io import StringIO
-from matplotlib import pyplot as plt
-from PIL import Image
-from IPython.display import display
+def process_image(img) :
 
-from object_detection.utils import ops as utils_ops
-from object_detection.utils import label_map_util
-from object_detection.utils import visualization_utils as vis_util
+  image_org = cv2.resize(img , (416,416), interpolation = cv2.INTER_CUBIC)
+  image_org = np.array(image_org , dtype = 'float32')
+  image_org = image_org/255.0
+  image_org =  np.expand_dims(image_org , axis=0)
 
-#버젼 호환을 위한 코드
-# patch tf1 into `utils.ops`
-utils_ops.tf = tf.compat.v1
+  return image_org
 
-# Patch the location of gfile
-tf.gfile = tf.io.gfile
+def get_classes(file) :
+    with open(file) as f:
+        name_of_class = f.readlines()
 
-def load_model(model_name):
-  base_url = 'http://download.tensorflow.org/models/object_detection/'
-  model_file = model_name + '.tar.gz'
-  model_dir = tf.keras.utils.get_file(
-    fname=model_name, 
-    origin=base_url + model_file,
-    untar=True)
+    name_of_class = [ class_name.strip()   for class_name in name_of_class ]
 
-  model_dir = pathlib.Path(model_dir)/"saved_model"
+    return name_of_class
 
-  model = tf.saved_model.load(str(model_dir))
+def box_draw(image, boxes, scores, classes, all_classes):
 
-  return model
+  for box, score, cl in zip(boxes, scores, classes):
+      x, y, w, h = box
 
-PATH_TO_LABELS = 'C:\\Users\\JB\\Documents\\rightbin\\Tensorflow\\models\\research\\object_detection\\data\\mscoco_label_map.pbtxt'
-category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS)
+      top = max(0, np.floor(x + 0.5).astype(int))
+      left = max(0, np.floor(y + 0.5).astype(int))
+      right = min(image.shape[1], np.floor(x + w + 0.5).astype(int))
+      bottom = min(image.shape[0], np.floor(y + h + 0.5).astype(int))
 
-PATH_TO_TEST_IMAGES_DIR = pathlib.Path('C:\\Users\\JB\\Documents\\rightbin\\Tensorflow\\models\\research\\object_detection\\test_images')
-TEST_IMAGE_PATHS = sorted(list(PATH_TO_TEST_IMAGES_DIR.glob("*.jpg")))
+      cv2.rectangle(image, (top, left), (right, bottom), (255, 0, 0), 2)
+      cv2.putText(image, '{0} {1:.2f}'.format(all_classes[cl], score),
+                  (top, left - 6),
+                  cv2.FONT_HERSHEY_SIMPLEX,
+                  0.6, (0, 0, 255), 1,
+                  cv2.LINE_AA)
 
+      print('class: {0}, score: {1:.2f}'.format(all_classes[cl], score))
+      print('box coordinate x,y,w,h: {0}'.format(box))
 
-# DEtection
-
-model_name = 'ssd_mobilenet_v1_coco_2017_11_17'
-
-detection_model = load_model(model_name)
-
-detection_model.signatures['serving_default'].output_dtypes
-
-detection_model.signatures['serving_default'].output_shapes
-
-def run_inference_for_single_image(model, image):
-  image = np.asarray(image)
-  # The input needs to be a tensor, convert it using `tf.convert_to_tensor`.
-  input_tensor = tf.convert_to_tensor(image)
-  # The model expects a batch of images, so add an axis with `tf.newaxis`.
-  input_tensor = input_tensor[tf.newaxis,...]
-
-  # Run inference
-  model_fn = model.signatures['serving_default']
-  output_dict = model_fn(input_tensor)
-
-  # All outputs are batches tensors.
-  # Convert to numpy arrays, and take index [0] to remove the batch dimension.
-  # We're only interested in the first num_detections.
-  num_detections = int(output_dict.pop('num_detections'))
-  output_dict = {key:value[0, :num_detections].numpy() 
-                 for key,value in output_dict.items()}
-  output_dict['num_detections'] = num_detections
-
-  # detection_classes should be ints.
-  output_dict['detection_classes'] = output_dict['detection_classes'].astype(np.int64)
-   
-  # Handle models with masks:
-  if 'detection_masks' in output_dict:
-    output_dict['detection_masks'] = tf.convert_to_tensor(output_dict['detection_masks'], dtype=tf.float32)
-    output_dict['detection_boxes'] = tf.convert_to_tensor(output_dict['detection_boxes'], dtype=tf.float32)
-    # Reframe the the bbox mask to the image size.
-    detection_masks_reframed = utils_ops.reframe_box_masks_to_image_masks(
-              output_dict['detection_masks'], output_dict['detection_boxes'],
-               image.shape[0], image.shape[1])  
-    detection_masks_reframed = tf.cast(detection_masks_reframed > 0.5,
-                                       tf.uint8)
-    output_dict['detection_masks_reframed'] = detection_masks_reframed.numpy()
-    
-  return output_dict
+  print()
 
 
-def show_inference(model):
-  # the array based representation of the image will be used later in order to prepare the
-  # result image with boxes and labels on it.
-  image_np = frame
-  # Actual detection.
-  output_dict = run_inference_for_single_image(model, image_np)
-  # Visualization of the results of a detection.
+def detect_image(image, yolo, all_classes) : 
   
-  vis_util.visualize_boxes_and_labels_on_image_array(
-      image_np,
-      np.array(output_dict['detection_boxes']),
-      output_dict['detection_classes'],
-      output_dict['detection_scores'],
-      category_index,
-      instance_masks=output_dict.get('detection_masks_reframed',None),
-      use_normalized_coordinates=True,
-      line_thickness=8)
 
-  cv2.imshow("LIVE" , image_np)
-  out.write(image_np)
+  pimage = process_image(image)
 
-cap = cv2.VideoCapture('tensorflow-object-detection\\data\\videos\\India.mp4')
+  image_boxes , image_classes , image_scores = yolo.predict(pimage,image.shape)
 
-# fourcc = cv2.VideoWriter_fourcc(*'MP4V')
-# out = cv2.VideoWriter('output.mp4',0x7634706d , 20.0, (640,480))
+  if image_boxes is not None :
+    box_draw(image, image_boxes , image_scores, image_classes, all_classes)
 
-width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-#재생할 파일의 높이 얻기
-height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-#재생할 파일의 프레임 레이트 얻기
-fps = cap.get(cv2.CAP_PROP_FPS)
-
-#windows 계열 DIVX
-#저장할 비디오 코덱
-# fourcc = cv2.VideoWriter_fourcc(*'DIVX')
-fourcc = cv2.VideoWriter_fourcc(*'H264')
-#저장할 파일 이름
-filename = 'output.mp4'
-
-#파일 stream 생성
-out = cv2.VideoWriter(filename, fourcc, fps, (int(width), int(height)))
-#filename : 파일 이름
-#fourcc : 코덱
-#fps : 초당 프레임 수
-#width : 넓이
-#height : 높이
+  
+  return image
 
 
-if cap.isOpened() == False :
-    print("Error opening video stream or file")
+##욜로 모델 import 하기
+from yolo_model import YOLO
 
-else :
+##욜로 모델 만들기
+yolo = YOLO(0.3, 0.7)
 
-    while(cap.isOpened()) :
+all_classes = get_classes('yolo/data/coco_classes.txt')
 
-        #사진을 1장씩 가져와서.
-        ret , frame = cap.read()
+image = cv2.imread('yolo/images/test/people.JPG')
 
-        #제대로 사진 가져왔으면, 화면에 표시!
-        if ret == True:
+result = detect_image(image, yolo , all_classes)
 
-            show_inference(detection_model)
-
-
-            # 키보드에서 esc키를 누르면 exit하라는 것.
-            if cv2.waitKey(25) & 0xFF == 27 :
-                break 
-
-        else:
-            break
-
-
+cv2.imshow("result", result)
+cv2.imwrite('0.3, 0.7.jpg', result)
 cv2.waitKey(0)
-out.release()
 cv2.destroyAllWindows()
             """
         )
