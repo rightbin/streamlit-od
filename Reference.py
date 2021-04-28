@@ -7,7 +7,7 @@ from PIL import Image
 def run_ref_app():
     
     st.title('Reference')
-    st.subheader('참고 문헌')  
+    st.subheader('👍참고 문헌')  
 
     st.write('https://pjreddie.com/darknet/yolo/')
     st.write('https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf2_detection_zoo.md')

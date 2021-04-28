@@ -8,6 +8,8 @@ def run_coco_app():
     
     st.title('SDC(self driving car)')
     st.subheader('자율주행에 사용되는 센서')  
+    st.write('👇SDC에 대해 직접 정리한 블로그 링크입니다')
+    st.write('https://rightbin.tistory.com/32')
 
     st.write('자율주행 자동차의 객체 인식 분야가 다른 점은 이질적인 센서를 동시에 사용한다는 점입니다. 동시 사용이 필요한 것은 하나의 센서의 정보만으로는 객체 인식이 이루어지지 않기 때문입니다. 아직까지는 센서의 인식률이 신뢰할 만큼 충분하지 않기 때문에 다양한 센서로 인식률을 높이는 작업이 중요한 단계입니다.')
     
