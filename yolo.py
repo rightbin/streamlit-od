@@ -9,7 +9,7 @@ def run_yolo_app():
     st.title('YOLO(You Only Look Once)')
     st.subheader('YOLO모델')  
 
-    img1 = Image.open('yolo.jpg')
+    img1 = Image.open('yolo.JPG')
     st.image(img1)
     
     st.write('Object detection 분야에서 쓰이는 모델로는, Faster-RCNN, MobileNet, SSD 등이 있습니다. 이 곳에서는 YOLO모델을 학습해보며 object-threshold와 nms-threshold에 대해 알아보도록 하겠습니다.')
