@@ -8,7 +8,9 @@ def run_yolo_app():
     
     st.title('YOLO(You Only Look Once)')
     st.subheader('YOLO모델')  
-
+    img = Image.open('yolo.jpg')
+    st.image(img)
+    
     st.write('Object detection 분야에서 쓰이는 모델로는, Faster-RCNN, MobileNet, SSD 등이 있습니다. 이 곳에서는 YOLO모델을 학습해보며 object-threshold와 nms-threshold에 대해 알아보도록 하겠습니다.')
 
     st.write('YOYO 모델에는 두개의 파라미터를 설정할 수 있습니다. 첫째는 object-threshold 두번째는 nms-threshold입니다.')
@@ -48,7 +50,7 @@ def run_yolo_app():
         st.image(img)
     elif obj == 0.1 and box == 0.5:
         img = Image.open('0.1, 0.5.jpg')
-        st.image(img)
+        st.image(img)   
     elif obj == 0.1 and box == 0.7:
         img = Image.open('0.1, 0.7.jpg')
         st.image(img)
@@ -62,13 +64,13 @@ def run_yolo_app():
         img = Image.open('0.3, 0.7.jpg')
         st.image(img)
 
+    st.subheader('구현 영상 & 코드')
+    
+    video_yolo = open('YOLO.mp4', 'rb')
+    video4 = video_yolo.read()
+    st.video(video4)
 
-    if st.button('CLICK!'):
-        video_yolo = open('YOLO.mp4', 'rb')
-        video4 = video_yolo.read()
-        st.video(video4)
-
-        st.text(
+    st.text(
                 """
 import os
 import time
@@ -148,9 +150,6 @@ cv2.destroyAllWindows()
             """
         )
         
-    else:
-        st.write(' 👆 버튼을 클릭하시면 구동 영상과 코드를 확인하실수 있습니다.')
-
     return
 
     return
