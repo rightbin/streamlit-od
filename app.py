@@ -18,10 +18,12 @@ from ml_app import run_ml_app
 from coco import run_coco_app
 from yolo import run_yolo_app
 from Reference import run_ref_app
+from opencv import run_opencv_app
+
 def main():
     
     # 사이드바 메뉴
-    menu= ['Home','SDC','COCO DATASET & SSD','YOLO','Reference']
+    menu= ['Home','SDC','OPEN CV','COCO DATASET & SSD','YOLO','Reference']
     choice = st.sidebar.selectbox('Menu', menu)
 
     if choice == 'Home':
@@ -40,6 +42,9 @@ def main():
         
     elif choice =='SDC':
         run_coco_app()
+
+    elif choice =='OPEN CV':
+        run_opencv_app()
 
     elif choice =='COCO DATASET & SSD':
         run_ml_app()
